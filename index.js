@@ -8,9 +8,17 @@ const port = 3000;
 let posts = [{
     id: 1,
     title: "My First Post",
-    content: "This is the content of my first post.",
+    content: "You’ve always wanted to have your own blog and use it to promote your business or product. You know that a blog is crucial for SEO, thought leadership, and building authority among your target audience. But the task of actually sitting down and writing a blog post can seem overwhelming. Especially when you’re planning to write your first blog post. But like everything else, writing a blog gets easier the more you practice. It’s important to focus on churning out your first blogs and doing it right. Then, you can get into the rhythm of regularly creating blog content that is high quality and engaging. So let’s get down to the details and explore how to write your first blog post and what you need to do to get started.",
     author: "John Doe"
-}];
+
+  },
+  {
+    id: 2,
+    title: "Gpt 5",
+    content: "GPT‑5 is our strongest coding model to date. It shows particular improvements in complex front‑end generation and debugging larger repositories. It can often create beautiful and responsive websites, apps, and games with an eye for aesthetic sensibility in just one prompt, intuitively and tastefully turning ideas into reality. Early testers also noted its design choices, with a much better understanding of things like spacing, typography, and white space. See here for full details on what GPT‑5 unlocks for developers.",
+    author: "Jane Smith"
+  }
+];
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
