@@ -1,6 +1,17 @@
 import express from "express";
 import bodyParser from "body-parser"
 import methodOverride from 'method-override'; 
+import pg from 'pg'
+
+const db = new pg.Client( {
+  user: 'postgres',
+  host: 'localhost',
+  database: 'post',
+  password: '123456',
+  port: 5433
+})
+
+db.connect();
 
 const app = express();
 const port = 3000;
@@ -24,7 +35,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static("public"));
 
-app.get("/", (req, res) => {
+async function getPost(){
+  const postQuery = await db.query('SELECT * FROM post');
+  posts = postQuery.rows;
+  console.log(posts)
+  return posts;
+}
+
+app.get("/", async(req, res) => {
+    const posts = await getPost();
     res.render("index.ejs", { posts });
 });
 
@@ -32,51 +51,51 @@ app.get("/create", (req, res) => {
     res.render("create.ejs");
 });
 
-app.post("/post", (req, res) => {
+app.post("/post", async(req, res) => {
     console.log(req.body)
-    const newPost = {
-      id: posts.length + 1,
-      title: req.body.title,
-      content: req.body.content,
-      author: req.body.author
+    const title = req.body.title;
+    const content = req.body.content;
+    const author = req.body.author;
+    try{
+        await db.query(`INSERT INTO post (title, content, author) VALUES ($1, $2, $3)`, [title, content, author]);
+        res.redirect("/");
+    }catch(error){
+      console.error("Error creating post:", error);
+      res.render("create.ejs", { error: "Data can't be null." });
     }
-    posts.push(newPost)
-
-    console.log(posts.length)
-    res.redirect("/")
+    
 })
 
-app.get("/edit/:id", (req, res) => {
+app.get("/edit/:id", async(req, res) => {
     const id = parseInt(req.params.id);
-    const editPost = posts.find(post => post.id === id);
+    const editPost = await db.query('SELECT * FROM post WHERE id = $1', [id]);
     console.log(editPost);
-    res.render("edit.ejs", { post: editPost });
+    res.render("edit.ejs", { post: editPost.rows[0] });
 });
 
-app.put("/edit/:id", (req, res) => {
+app.put("/edit/:id", async(req, res) => {
     const id = parseInt(req.params.id);
-    const editPost = posts.find(post => post.id === id);
+    const editPost =  await db.query('SELECT * FROM post WHERE id = $1', [id]);
     if(editPost){
-      editPost.title = req.body.title;
-      editPost.content = req.body.content;
-      editPost.author = req.body.author;
-      console.log("Post updated successfully");
+      const title = req.body.title;
+      const content = req.body.content;
+      const author = req.body.author;
+      await db.query('UPDATE post SET title = $1, content = $2, author = $3 WHERE id = $4', [title, content, author, id]);
       res.redirect("/");
-    }
-    else{
-      console.log("Post not found");
+    }else{
+      console.log("post not found")
     }
 
 })
 
-app.delete("/delete/:id", (req, res) => {
+app.delete("/delete/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  posts = posts.filter(post => post.id != id);
+  await db.query('DELETE FROM post WHERE id = $1', [id]);
   console.log("Post deleted successfully");
   res.redirect("/");
 
-})
+});
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port http://localhost:${port}`);
 });
